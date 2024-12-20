@@ -43,8 +43,6 @@ def find(arr, last_i, arr_len, total):
 arr = [i for i in range(1, 19+1)]
 out3 = find(arr, last_i=0, arr_len=3, total=SUM)
 
-out3 = [set(o) for o in out3] # 含3个元素且和为SUM的所有数组
-
 for o in out3: assert sum(o) == SUM
 print (len(out3))
 
