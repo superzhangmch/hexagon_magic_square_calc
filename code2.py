@@ -1,4 +1,3 @@
-import itertools
 
 '''
 1~19不重复填充后，横竖斜和都是38：
@@ -46,7 +45,7 @@ out3 = find(arr, last_i=0, arr_len=3, total=SUM)
 for o in out3: assert sum(o) == SUM
 print (len(out3))
 
-def find_ring(arr, already_idx, already_arr, cnt, last_end, end):
+def find_ring(arr, already_idx, cnt, last_end, end):
     def get2(arr, st):
         aa, bb = [a for a in arr if a != st]
         return [st, aa, bb], [st, bb, aa]
@@ -65,15 +64,14 @@ def find_ring(arr, already_idx, already_arr, cnt, last_end, end):
         elif cnt == 4 and  arr2[-1] == end:
             out.append([arr2])
         else:
-            r1 = find_ring(arr, already_idx + [i], already_arr + [arr1], cnt+1, arr1[-1], end)
-            r2 = find_ring(arr, already_idx + [i], already_arr + [arr2], cnt+1, arr2[-1], end)
+            r1 = find_ring(arr, already_idx + [i], cnt+1, arr1[-1], end)
+            r2 = find_ring(arr, already_idx + [i], cnt+1, arr2[-1], end)
             if r1: 
                 for r in r1:
                     out.append([arr1] + r)
             if r2: 
                 for r in r2:
                     out.append([arr2] + r)
-    #if len(out) > 0: print ('aaaaa', out)
     return out
 
 def find_answer(arr):
@@ -84,35 +82,49 @@ def find_answer(arr):
               (a4[1],   x4,   x3,  a2[1]))
                 (a2[-1], a3[1], a3[0]))
     '''
-    set_all = set([i for i in range(1, 20, 1)])
-    set_used = set() # 六条边已经用了哪些1~19中数字
+    all_num = [0 for i in range(0, 21, 1)]
     for a1 in arr:
         for a2 in a1:
-            set_used.add(a2)
-    set_not_used = set_all - set_used # 还有哪7个数字没用
+            all_num[a2] = 1
+    used = 0
+    for i in range(20):
+        if all_num[i] == 1: used += 1
+    if used != 12:
+        return False
 
     a0, a1, a2, a3, a4, a5 = arr
-    for v in set_not_used: # 余下的7个数字，只要给出一个，就可以算出余下六个。也就是说只需要遍历7遍即可
-        x0 = v
+    for i in range(20): # 余下的7个数字，只要给出一个，就可以算出余下六个。也就是说只需要遍历7遍即可
+        all_num1 = [a for a in all_num]
+
+        x0 = i
+        if not (1<= x0 <= 19 and not all_num1[x0]): continue
+        all_num1[x0] = 1
+
         x1 = SUM - a5[1] - a1[1] - x0
-        if not (1<= x1 <= 19 and x1 not in set_used): continue
+        if not (1<= x1 <= 19 and not all_num1[x1]): continue
+        all_num1[x1] = 1
 
         x2 = SUM - a0[1] - a2[1] - x1
-        if not (1<= x2 <= 19 and x2 not in set_used): continue
+        if not (1<= x2 <= 19 and not all_num1[x2]): continue
+        all_num1[x2] = 1
 
         x3 = SUM - a1[1] - a3[1] - x2
-        if not (1<= x3 <= 19 and x3 not in set_used): continue
+        if not (1<= x3 <= 19 and not all_num1[x3]): continue
+        all_num1[x3] = 1
 
         x4 = SUM - a2[1] - a4[1] - x3
-        if not (1<= x4 <= 19 and x4 not in set_used): continue
+        if not (1<= x4 <= 19 and not all_num1[x4]): continue
+        all_num1[x4] = 1
 
         x5 = SUM - a3[1] - a5[1] - x4
-        if not (1<= x5 <= 19 and x5 not in set_used): continue
+        if not (1<= x5 <= 19 and not all_num1[x5]): continue
+        all_num1[x5] = 1
 
         x6 = SUM - a0[-1] -a3[-1] - x1 - x4
-        if not (1<= x6 <= 19 and x5 not in set_used): continue
+        if not (1<= x6 <= 19 and not all_num1[x6]): continue
+        all_num1[x6] = 1
 
-        if len(set([x0, x1, x2, x3, x4, x5, x6])) == len(set_not_used):
+        if 1:
             print ("     %02d %02d %02d" % (a0[0], a0[1], a0[2]))
             print ("   %02d %02d %02d %02d" % (a5[1], x0, x1, a1[1]))
             print (" %02d %02d %02d %02d %02d" % (a5[0], x5, x6, x2, a2[0]))
@@ -122,15 +134,17 @@ def find_answer(arr):
             return True
     return False
 
+def get_all_comb(arr):
+    a, b, c = arr
+    return [a, b, c], [a, c, b], [b, a, c], [b, c, a], [b, c, a], [c, b, a]
 
 def find_result(arr):
     c = 0
     c1 = 0
     for  i in range(len(arr)):
-        for arr1 in itertools.permutations(arr[i]):
+        for arr1 in get_all_comb(arr[i]):
             already_idx = [i]
-            already_arr = [arr1]
-            r1 = find_ring(arr, already_idx, already_arr, 0, arr1[-1], arr1[0])
+            r1 = find_ring(arr, already_idx, 0, arr1[-1], arr1[0])
             if r1:
                 for r in r1:
                     arr2 = [list(arr1)] + r
@@ -141,5 +155,4 @@ def find_result(arr):
                         print ('Find', c, c1, arr2)
                         c1 += 1
 
-find_result(out3) 
-
+find_result(out3)
